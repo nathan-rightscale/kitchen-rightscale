@@ -17,6 +17,7 @@
 # limitations under the License.
 
 require 'kitchen'
+require 'kitchen/driver/rightscale_version'
 require 'right_api_client'
 
 module Kitchen
@@ -31,25 +32,29 @@ module Kitchen
       kitchen_driver_api_version 2
       plugin_version Kitchen::Driver::RIGHTSCALE_VERSION
       
-      default_config :email, nil
-      default_config :password, nil
-      required_config :account_id, nil
+      default_config :email
+      default_config :password
+      required_config :account_id
       default_config :refresh_token, nil
-      required_config :api_url, nil
+      default_config :api_url, nil
       default_config :template, nil
       default_config :deployment, nil
       default_config :server_name, nil
            
       def create(state)
-        @Client = RightApi::Client.new(:email => driver[:email], :password => driver[:password], :account_id => driver[:account_id])
-        @server = @Client.servers.index(:filter => ['#{driver[:server_name}'])
-        @server.launch()
+        puts config[:email]
+        puts config[:password]
+        puts config[:account_id]
+        
+        @Client = RightApi::Client.new(:email => config[:email], :password => config[:password], :account_id => config[:account_id])
+        @server = @Client.servers.index(:filter => ["name==#{config[:server_name]}"])
+        @server.first.launch()
       end
 
       def destroy(state)
-        @Client = RightApi::Client.new(:email => driver[:email], :password => driver[:password], :account_id => driver[:account_id])
-        @server = @Client.servers.index(:filter=> ['#{driver[:server_name}'])
-        @server.terminate()
+        @Client = RightApi::Client.new(:email => config[:email], :password => config[:password], :account_id => config[:account_id])
+        @server = @Client.servers.index(:filter=> ["name==#{config[:server_name]}"])
+        @server.first.terminate()
       end
     end
   end
